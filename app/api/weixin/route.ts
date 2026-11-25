@@ -1,5 +1,5 @@
 // app/api/weixin/route.ts
-// 代理转发 WeChat iLink API 请求，解决浏览器 CORS 限制。
+// 代理转发 WeChat iLink API 请求，解决浏览器 CORS 限制。（重试部署触发）
 // 浏览器调用 POST /api/weixin，本路由将请求转发到 ilinkai.weixin.qq.com。
 
 import { NextResponse } from "next/server";

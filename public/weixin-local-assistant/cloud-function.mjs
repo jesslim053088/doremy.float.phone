@@ -1904,7 +1904,7 @@ async function callIlinkJson(path, botToken, body, method = "POST") {
 }
 
 function makeIlinkHeaders(botToken) {
-  const headers = { "Content-Type": "application/json", "iLink-App-ClientVersion": "2.0.0" };
+  const headers = { "Content-Type": "application/json", "iLink-App-ClientVersion": "1" };
   if (botToken) {
     headers.Authorization = `Bearer ${botToken}`;
     headers.AuthorizationType = "ilink_bot_token";

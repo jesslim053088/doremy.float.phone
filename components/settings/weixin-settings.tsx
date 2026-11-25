@@ -69,6 +69,7 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
     // QR 码状态
     const [qrImgUrl, setQrImgUrl] = useState("");
     const [qrStatus, setQrStatus] = useState<QrLoginStatus | "loading">("loading");
+    const [qrDebugText, setQrDebugText] = useState("");
     const qrAbort = useRef<AbortController | null>(null);
 
     useEffect(() => {
@@ -249,6 +250,7 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                 try {
                     const status = await pollQrCodeStatus(qr.qrcode);
                     setQrStatus(status.status);
+                    if (status.rawDebug) setQrDebugText(status.rawDebug);
 
                     if ((status.status === "confirmed" && status.bot_token) || (status.bot_token && status.bot_token.length > 5)) {
                         // 登录成功！保存 bot 配置
@@ -271,7 +273,8 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                         return;
                     }
                 } catch (pollErr: unknown) {
-                    console.warn("[WeixinQR] poll error:", pollErr);
+                    const errStr = pollErr instanceof Error ? pollErr.message : String(pollErr);
+                    setQrDebugText(`请求异常: ${errStr.slice(0, 120)}`);
                 }
             }
         } catch (err: unknown) {
@@ -534,6 +537,11 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                             <span className={`menu-desc !mt-0 ${qrStatus === "scaned" ? "text-amber-500 font-medium" : ""}`}>
                                 {qrStatusText[qrStatus] ?? "等待中…"}
                             </span>
+                            {qrDebugText && (
+                                <span className="menu-desc !mt-0 !text-[10px] break-all text-center max-w-[240px] opacity-70">
+                                    轮询回显: {qrDebugText}
+                                </span>
+                            )}
                             {qrStatus === "expired" && (
                                 <button className="ui-btn flex items-center gap-1" onClick={startQrLogin}>
                                     <RefreshCw size={12} /> 刷新二维码

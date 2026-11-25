@@ -842,39 +842,23 @@ type QrStatusResponse = {
 export async function getLoginQrCode(): Promise<QrCodeResponse> {
     return ilinkCall<QrCodeResponse>(
         "/ilink/bot/get_bot_qrcode?bot_type=3",
-        { base_info: BASE_INFO },
+        undefined,
         undefined,
     );
 }
 
 /** 轮询扫码状态 */
 export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse & { rawDebug?: string }> {
-    const path = `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`;
-    let res = await fetch("/api/weixin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            path,
-            method: "POST",
-            body: { qrcode, base_info: BASE_INFO },
-        }),
-    });
-    if (!res.ok) {
-        res = await fetch("/api/weixin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path, method: "GET" }),
-        });
-    }
-    if (!res.ok) {
-        throw new Error(`poll status ${res.status}`);
-    }
-    const data = await res.json() as Record<string, unknown>;
+    const data = await ilinkCall<Record<string, unknown>>(
+        `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
+        undefined,
+        undefined,
+    );
     const nested = (data.data && typeof data.data === "object" ? data.data : {}) as Record<string, unknown>;
     const rawStatus = String(data.status ?? nested.status ?? data.qrcode_status ?? "").toLowerCase();
     const token = String(
-        data.bot_token || data.ilink_bot_token || data.token ||
-        nested.bot_token || nested.ilink_bot_token || nested.token || ""
+        data.bot_token || data.ilink_bot_token || data.token || data.access_token ||
+        nested.bot_token || nested.ilink_bot_token || nested.token || nested.access_token || ""
     ).trim();
     let status: QrLoginStatus = "wait";
     if (token || rawStatus === "confirmed" || rawStatus === "ok" || rawStatus === "success" || rawStatus === "authorized" || rawStatus === "2" || rawStatus === "3") {
@@ -888,7 +872,7 @@ export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse
         status,
         bot_token: token || undefined,
         ilink_bot_id: String(data.ilink_bot_id || nested.ilink_bot_id || "") || undefined,
-        rawDebug: JSON.stringify(data).slice(0, 160),
+        rawDebug: JSON.stringify(data).slice(0, 200),
     };
 }
 

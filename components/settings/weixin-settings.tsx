@@ -266,12 +266,12 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                     }
 
                     if (status.status === "expired") {
-                        setAddError("二维码已过期，请重试");
+                        setAddError(`二维码已过期，请重试 ${status.rawDebug ? `(${status.rawDebug})` : ""}`);
                         setAddStep("select-character");
                         return;
                     }
-                } catch {
-                    // 单次轮询失败，继续
+                } catch (pollErr: unknown) {
+                    console.warn("[WeixinQR] poll error:", pollErr);
                 }
             }
         } catch (err: unknown) {

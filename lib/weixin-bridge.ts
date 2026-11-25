@@ -849,11 +849,33 @@ export async function getLoginQrCode(): Promise<QrCodeResponse> {
 
 /** 轮询扫码状态 */
 export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse> {
-    return ilinkCall<QrStatusResponse>(
-        `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
-        undefined,
-        undefined,
-    );
+    const res = await fetch("/api/weixin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            path: `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
+            method: "GET",
+        }),
+    });
+    if (!res.ok) {
+        throw new Error(`poll status ${res.status}`);
+    }
+    const data = await res.json() as Record<string, unknown>;
+    const rawStatus = String(data.status || "").toLowerCase();
+    const token = String(data.bot_token || data.ilink_bot_token || data.token || "").trim();
+    let status: QrLoginStatus = "wait";
+    if (token || rawStatus === "confirmed" || rawStatus === "ok" || rawStatus === "success" || rawStatus === "authorized") {
+        status = "confirmed";
+    } else if (rawStatus === "scaned" || rawStatus === "scanned") {
+        status = "scaned";
+    } else if (rawStatus === "expired" || rawStatus === "timeout") {
+        status = "expired";
+    }
+    return {
+        status,
+        bot_token: token || undefined,
+        ilink_bot_id: String(data.ilink_bot_id || "") || undefined,
+    };
 }
 
 // ── 处理一条来自微信的消息 ────────────────────────────────────

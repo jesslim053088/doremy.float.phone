@@ -250,7 +250,7 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                     const status = await pollQrCodeStatus(qr.qrcode);
                     setQrStatus(status.status);
 
-                    if (status.status === "confirmed" && status.bot_token) {
+                    if ((status.status === "confirmed" && status.bot_token) || (status.bot_token && status.bot_token.length > 5)) {
                         // 登录成功！保存 bot 配置
                         const char = characters.find(c => c.id === newCharacterId);
                         addExclusiveWeixinBot({

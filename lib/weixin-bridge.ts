@@ -32,7 +32,7 @@ type ILinkPollResponse = {
     get_updates_buf?: string;
 };
 
-const BASE_INFO = { channel_version: "1.0.3" };
+const BASE_INFO = { channel_version: "2.0.0" };
 
 type WeixinOutgoing =
     | { kind: "text"; text: string }
@@ -842,7 +842,7 @@ type QrStatusResponse = {
 export async function getLoginQrCode(): Promise<QrCodeResponse> {
     return ilinkCall<QrCodeResponse>(
         "/ilink/bot/get_bot_qrcode?bot_type=3",
-        undefined,
+        { base_info: BASE_INFO },
         undefined,
     );
 }

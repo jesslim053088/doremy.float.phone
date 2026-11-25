@@ -848,33 +848,47 @@ export async function getLoginQrCode(): Promise<QrCodeResponse> {
 }
 
 /** 轮询扫码状态 */
-export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse> {
-    const res = await fetch("/api/weixin", {
+export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse & { rawDebug?: string }> {
+    const path = `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`;
+    let res = await fetch("/api/weixin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            path: `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
-            method: "GET",
+            path,
+            method: "POST",
+            body: { qrcode, base_info: BASE_INFO },
         }),
     });
+    if (!res.ok) {
+        res = await fetch("/api/weixin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ path, method: "GET" }),
+        });
+    }
     if (!res.ok) {
         throw new Error(`poll status ${res.status}`);
     }
     const data = await res.json() as Record<string, unknown>;
-    const rawStatus = String(data.status || "").toLowerCase();
-    const token = String(data.bot_token || data.ilink_bot_token || data.token || "").trim();
+    const nested = (data.data && typeof data.data === "object" ? data.data : {}) as Record<string, unknown>;
+    const rawStatus = String(data.status ?? nested.status ?? data.qrcode_status ?? "").toLowerCase();
+    const token = String(
+        data.bot_token || data.ilink_bot_token || data.token ||
+        nested.bot_token || nested.ilink_bot_token || nested.token || ""
+    ).trim();
     let status: QrLoginStatus = "wait";
-    if (token || rawStatus === "confirmed" || rawStatus === "ok" || rawStatus === "success" || rawStatus === "authorized") {
+    if (token || rawStatus === "confirmed" || rawStatus === "ok" || rawStatus === "success" || rawStatus === "authorized" || rawStatus === "2" || rawStatus === "3") {
         status = "confirmed";
-    } else if (rawStatus === "scaned" || rawStatus === "scanned") {
+    } else if (rawStatus === "scaned" || rawStatus === "scanned" || rawStatus === "1") {
         status = "scaned";
-    } else if (rawStatus === "expired" || rawStatus === "timeout") {
+    } else if (rawStatus === "expired" || rawStatus === "timeout" || rawStatus === "4") {
         status = "expired";
     }
     return {
         status,
         bot_token: token || undefined,
-        ilink_bot_id: String(data.ilink_bot_id || "") || undefined,
+        ilink_bot_id: String(data.ilink_bot_id || nested.ilink_bot_id || "") || undefined,
+        rawDebug: JSON.stringify(data).slice(0, 160),
     };
 }
 

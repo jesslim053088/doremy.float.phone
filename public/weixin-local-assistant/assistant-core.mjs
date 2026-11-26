@@ -22,7 +22,7 @@ const WEIXIN_SHORTCUT_IMAGE_MARKER = "__FLOAT_WEIXIN_SHORTCUT_IMAGE__";
 // 识图关着时代替截图进上下文的说明：不留这句话，模型面对的是空白，
 // 既不知道图回没回来，也不知道自己为什么看不见。
 const SHORTCUT_VISION_OFF_NOTE = "（系统记录：未配置或未启用图像识别，本轮回传的图片没有交给你；请结合上一条的文字内容回应。）";
-const ILINK_BASE = "https://ilinkai.weixin.qq.com";
+const ILINK_BASE = "https://ilinkai.wechat.com";
 const CDN_BASE_URL = "https://novac2c.cdn.weixin.qq.com/c2c";
 const BASE_INFO = { channel_version: "2.0.0" };
 // 锁 TTL 必须远小于「函数被平台掐掉后到下次可重试」的可接受等待：

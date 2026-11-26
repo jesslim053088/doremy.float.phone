@@ -847,13 +847,29 @@ export async function getLoginQrCode(): Promise<QrCodeResponse> {
     );
 }
 
+let _redirectHost: string | undefined;
+
 /** 轮询扫码状态 */
 export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse & { rawDebug?: string }> {
-    const data = await ilinkCall<Record<string, unknown>>(
-        `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
-        undefined,
-        undefined,
-    );
+    const callStatus = async (host?: string) => {
+        const res = await fetch("/api/weixin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                path: `/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(qrcode)}`,
+                method: "POST",
+                host,
+                body: {},
+            }),
+        });
+        if (!res.ok) throw new Error(`proxy ${res.status}`);
+        return res.json() as Promise<Record<string, unknown>>;
+    };
+    let data = await callStatus(_redirectHost);
+    if (typeof data.redirect_host === "string" && data.redirect_host.trim()) {
+        _redirectHost = data.redirect_host.trim();
+        data = await callStatus(_redirectHost);
+    }
     const nested = (data.data && typeof data.data === "object" ? data.data : {}) as Record<string, unknown>;
     const rawStatus = String(data.status ?? nested.status ?? data.qrcode_status ?? "").toLowerCase();
     const token = String(

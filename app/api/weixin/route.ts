@@ -18,7 +18,8 @@ export const maxDuration = 25;
 // 也能被掐断（客户端开关只对刷新后的新会话生效）。恢复功能：改回 false 重新部署。
 const WEIXIN_POLL_PAUSED = true;
 
-const ILINK_BASE = "https://ilinkai.weixin.qq.com";
+const ILINK_BASE = "https://ilinkai.wechat.com";
+const ALLOWED_ILINK_HOSTS = new Set(["ilinkai.weixin.qq.com", "ilinkai.wechat.com"]);
 const CDN_BASE_URL = "https://novac2c.cdn.weixin.qq.com/c2c";
 const BASE_INFO = { channel_version: "2.0.0" };
 
@@ -458,15 +459,15 @@ export async function POST(request: Request) {
         }
     }
 
-    const { path, method = "POST", botToken, body } = payload as ProxyRequest;
+    const { path, method = "POST", botToken, body, host } = payload as ProxyRequest & { host?: string };
 
     if (!path) {
         return NextResponse.json({ error: "missing_path" }, { status: 400 });
     }
 
     const headers = makeIlinkHeaders(botToken);
-
-    const url = `${ILINK_BASE}${path}`;
+    const baseHost = host && ALLOWED_ILINK_HOSTS.has(host) ? `https://${host}` : ILINK_BASE;
+    const url = `${baseHost}${path}`;
     const fetchMethod = method === "GET" ? "GET" : "POST";
     const hasBody = body !== undefined && body !== null
         && !(typeof body === "object" && Object.keys(body as object).length === 0);

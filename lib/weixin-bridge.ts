@@ -842,7 +842,7 @@ type QrStatusResponse = {
 export async function getLoginQrCode(): Promise<QrCodeResponse> {
     return ilinkCall<QrCodeResponse>(
         "/ilink/bot/get_bot_qrcode?bot_type=3",
-        undefined,
+        { base_info: BASE_INFO },
         undefined,
     );
 }

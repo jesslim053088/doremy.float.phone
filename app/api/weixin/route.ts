@@ -158,7 +158,7 @@ function fetchViaProxy(
 function makeIlinkHeaders(botToken?: string): Record<string, string> {
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        "iLink-App-ClientVersion": "1",
+        "iLink-App-ClientVersion": "2.0.0",
     };
 
     if (botToken) {

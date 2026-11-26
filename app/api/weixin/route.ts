@@ -18,7 +18,7 @@ export const maxDuration = 25;
 // 也能被掐断（客户端开关只对刷新后的新会话生效）。恢复功能：改回 false 重新部署。
 const WEIXIN_POLL_PAUSED = true;
 
-const ILINK_BASE = "https://ilinkai.wechat.com";
+const ILINK_BASE = "https://ilinkai.weixin.qq.com";
 const ALLOWED_ILINK_HOSTS = new Set(["ilinkai.weixin.qq.com", "ilinkai.wechat.com"]);
 const CDN_BASE_URL = "https://novac2c.cdn.weixin.qq.com/c2c";
 const BASE_INFO = { channel_version: "2.0.0" };

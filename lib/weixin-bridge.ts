@@ -838,16 +838,17 @@ type QrStatusResponse = {
     ilink_bot_id?: string;
 };
 
+let _redirectHost: string | undefined;
+
 /** 获取登录二维码 */
 export async function getLoginQrCode(): Promise<QrCodeResponse> {
+    _redirectHost = undefined;
     return ilinkCall<QrCodeResponse>(
         "/ilink/bot/get_bot_qrcode?bot_type=3",
         { base_info: BASE_INFO },
         undefined,
     );
 }
-
-let _redirectHost: string | undefined;
 
 /** 轮询扫码状态 */
 export async function pollQrCodeStatus(qrcode: string): Promise<QrStatusResponse & { rawDebug?: string }> {

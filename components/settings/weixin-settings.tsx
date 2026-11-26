@@ -268,8 +268,7 @@ export function WeixinSettings({ onOpenCloudServices }: { onOpenCloudServices?: 
                     }
 
                     if (status.status === "expired") {
-                        setAddError(`二维码已过期，请重试 ${status.rawDebug ? `(${status.rawDebug})` : ""}`);
-                        setAddStep("select-character");
+                        setQrStatus("expired");
                         return;
                     }
                 } catch (pollErr: unknown) {

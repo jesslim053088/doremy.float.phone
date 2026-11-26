@@ -296,8 +296,9 @@ export function ChatMessageList({ onCloseApp, onOpenHistorySearch, activeSession
                                 && (!keyword || (mascotSettings.nickname || "AI助手").toLowerCase().includes(keyword));
                             const regularItems = [...sessions]
                             .filter(s => {
-                                if (!(s.isGroup || contactIds.has(s.contactId))) return false;
-                                if (!hasSessionListContent(s.id)) return false;
+                                const hasContent = hasSessionListContent(s.id);
+                                if (!(s.isGroup || contactIds.has(s.contactId) || hasContent)) return false;
+                                if (!hasContent) return false;
                                 if (listTab === "private" && s.isGroup) return false;
                                 if (listTab === "group" && !s.isGroup) return false;
                                 if (!keyword) return true;

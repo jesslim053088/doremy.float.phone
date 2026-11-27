@@ -303,7 +303,8 @@ export function ChatMessageList({ onCloseApp, onOpenHistorySearch, activeSession
                                 if (listTab === "group" && !s.isGroup) return false;
                                 if (!keyword) return true;
                                 if (s.isGroup) return (s.groupName || "群聊").toLowerCase().includes(keyword);
-                                const name = s.alias || allChars.find(c => c.id === s.contactId)?.name || "";
+                                const matchedChar = allChars.find(c => c.id === s.characterId || c.id === s.contactId);
+                                const name = s.alias || matchedChar?.name || "";
                                 return name.toLowerCase().includes(keyword);
                             })
                             .sort((a, b) => {
@@ -759,7 +760,12 @@ function ContactPicker({ onClose, onSelect }: { onClose: () => void; onSelect: (
 
 function SessionItem({ session, onSelect, isPinned }: { session: ChatSession, onSelect: () => void, isPinned?: boolean }) {
     const chars = loadCharacters();
-    const character = chars.find(c => c.id === session.contactId);
+    const contactRecord = loadChatContacts().find(c => c.id === session.contactId || c.characterId === session.characterId || c.characterId === session.contactId);
+    const character = chars.find(c =>
+        (session.characterId && c.id === session.characterId) ||
+        c.id === session.contactId ||
+        (contactRecord && c.id === contactRecord.characterId)
+    );
     const lastVisibleMessage = getLastVisibleSessionMessage(session.id);
     const lastOfflineTurn = getLastChatOfflineTurn(session.id);
     // 线下记录比线上消息新时（含只在线下聊过的会话），列表展示线下摘要
